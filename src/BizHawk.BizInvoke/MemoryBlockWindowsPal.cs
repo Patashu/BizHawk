@@ -184,7 +184,7 @@ namespace BizHawk.BizInvoke
 			public static readonly IntPtr INVALID_HANDLE_VALUE = Z.US(0xffffffffffffffff);
 		}
 
-		public static class WinGuard
+		private static class WinGuard
 		{
 			/// <summary>
 			/// Add write guard detection.  Any page in the specified range that triggers an access violation on write
