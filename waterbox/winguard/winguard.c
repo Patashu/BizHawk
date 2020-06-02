@@ -18,9 +18,10 @@ static LONG VectoredHandler(struct _EXCEPTION_POINTERS* p_info)
 	EXCEPTION_RECORD* p_record = p_info->ExceptionRecord;
 
 	// CONTEXT* p_context = p_info->ContextRecord;
-	// DWORD64 flags = p_record->ExceptionInformation[0];
+	DWORD64 flags = p_record->ExceptionInformation[0];
 
-	if (p_record->ExceptionCode != STATUS_ACCESS_VIOLATION)
+	if (p_record->ExceptionCode != STATUS_ACCESS_VIOLATION // only trigger on access violations...
+		|| !(flags & 1)) // ...due to a write attempts
 		return EXCEPTION_CONTINUE_SEARCH;
 	
 	uintptr_t faultAddress = (uintptr_t)p_record->ExceptionInformation[1];
