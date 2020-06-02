@@ -183,5 +183,37 @@ namespace BizHawk.BizInvoke
 
 			public static readonly IntPtr INVALID_HANDLE_VALUE = Z.US(0xffffffffffffffff);
 		}
+
+		public static class WinGuard
+		{
+			/// <summary>
+			/// Add write guard detection.  Any page in the specified range that triggers an access violation on write
+			/// will be noted, set to read+write permissions, and execution will be continued.
+			/// CALLER'S RESPONSIBILITY: All addresses are page aligned.
+			/// CALLER'S RESPONSIBILITY: No other thread enters any WinGuard function, or trips any tracked guard page during this call.
+			/// CALLER'S RESPONSIBILITY: Pages to be tracked are VirtualProtected to R beforehand.  Pages with write permission will
+			/// not trip, and WinGuard will not intercept Guard flag exceptions in any way.
+			/// </summary>
+			[DllImport("winguard.dll")]
+			public static extern bool AddTripGuard(UIntPtr start, UIntPtr length);
+			/// <summary>
+			/// Remove guard page detection from the specified addresses.
+			/// CALLER'S RESPONSIBILITY: All addresses are page aligned.
+			/// CALLER'S RESPONSIBILITY: No other thread enters any WinGuard function, or trips any tracked guard page during this call.
+			/// </summary>
+			[DllImport("winguard.dll")]
+			public static extern bool RemoveTripGuard(UIntPtr start, UIntPtr length);
+			/// <summary>
+			/// Examines a previously installed guard page detection.
+			/// CALLER'S RESPONSIBILITY: All addresses are page aligned.
+			/// CALLER'S RESPONSIBILITY: No other thread enters any WinGuard function, or trips any tracked guard page during this call.
+			/// </summary>
+			/// <returns>
+			/// A pointer to an array of bytes, one byte for each memory page in the range.
+			/// 1 = tripped, 0 = not tripped.
+			/// </returns>
+			[DllImport("winguard.dll")]
+			public static extern IntPtr ExamineTripGuard(UIntPtr start, UIntPtr length);
+		}
 	}
 }
