@@ -20,7 +20,7 @@ static LONG VectoredHandler(struct _EXCEPTION_POINTERS* p_info)
 	// CONTEXT* p_context = p_info->ContextRecord;
 	// DWORD64 flags = p_record->ExceptionInformation[0];
 
-	if (p_record->ExceptionCode != STATUS_GUARD_PAGE_VIOLATION)
+	if (p_record->ExceptionCode != STATUS_ACCESS_VIOLATION)
 		return EXCEPTION_CONTINUE_SEARCH;
 	
 	uintptr_t faultAddress = (uintptr_t)p_record->ExceptionInformation[1];
@@ -28,6 +28,13 @@ static LONG VectoredHandler(struct _EXCEPTION_POINTERS* p_info)
 	{
 		if (Trips[i] && faultAddress >= Trips[i]->start && faultAddress < Trips[i]->start + Trips[i]->length)
 		{
+			DWORD oldprot;
+			if (!VirtualProtect((void*)faultAddress, 1, PAGE_READWRITE, &oldprot))
+			{
+				RaiseFailFastException(NULL, NULL, 0);
+				while (1)
+					;
+			}
 			uintptr_t page = (faultAddress - Trips[i]->start) >> 12;
 			Trips[i]->tripped[page] = 1;
 			return EXCEPTION_CONTINUE_EXECUTION;
